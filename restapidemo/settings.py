@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_rest_passwordreset',
     'knox',
     'corsheaders',
 ]
@@ -110,14 +111,26 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+     'EXCEPTION_HANDLER': 'restapidemo.utils.custom_exception_handler',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
         'knox.auth.TokenAuthentication',
     ]
+   ,
+   
+
 }
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# email setting
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mulevasangita@gmail.com'
+EMAIL_HOST_PASSWORD = 'jzwjyniyaybarcyg' #past the key or password app here
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'mulevasangita@gmail.com'
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 

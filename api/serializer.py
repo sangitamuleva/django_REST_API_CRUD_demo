@@ -41,17 +41,34 @@ class RegisterSerializer(serializers.ModelSerializer):
         model=User
         fields = ('id','username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
+       
+        # def validate_username(self, value):
+        #     check_query = User.objects.filter(username=value)
+        #     if self.instance:
+        #         check_query = check_query.exclude(pk=self.instance.pk)
 
+        #     if self.parent is not None and self.parent.instance is not None:
+        #         user = getattr(self.parent.instance, self.username)
+        #         check_query = check_query.exclude(pk=user.pk)
+
+        #     if check_query.exists():
+        #         raise serializers.ValidationError('Username already exists.')
+
+        #     print(value)
+        #     print('----')
+        #     return value
         # def create(self, validated_data):
+        #     print("----------- creater")
         #     user = User(username=validated_data['username'],email= validated_data['email'])
-        #     user.make_password(validated_data['password'])
-        #     user.save()
+        #     user.password=make_password(validated_data['password'])
+        #     # user.save()
         #     return user
 
-        def create(self, validated_data):
-            password = validated_data.pop('password', None)
-            instance = self.Meta.model(**validated_data)
-            if password is not None:
-                instance.set_password(password)
-            # instance.save()
-            return instance
+        # def create(self, validated_data):
+        #     print("----------- creater")
+        #     password = validated_data.pop('password', None)
+        #     instance = self.Meta.model(**validated_data)
+        #     if password is not None:
+        #         instance.set_password(password)
+        #     # instance.save()
+        #     return instance

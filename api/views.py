@@ -12,7 +12,9 @@ from .models.category import Category
 from django.contrib.auth import login
 from .serializer import *
 from rest_framework.views import APIView
-
+from django.contrib.auth.models import User
+from django.urls import reverse
+from django.db import IntegrityError
 # @api_view(['POST'])
 # def product_create(request):
 #     serializer=ProductSerializer(data=request.data,many=False)
@@ -98,20 +100,28 @@ class Register_user(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
-        serializer = self.get_serializer(data=request.data)
+        # print(request.data)
+            serializer = self.get_serializer(data=request.data)
        
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-       
-        user.set_password(user.password)
-        user.save()
-        return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "token": AuthToken.objects.create(user)[1],
-            "message":"User created Successfully!!"
-        })
+        # try:
+            serializer.is_valid(raise_exception=True)
+        
 
+            user = serializer.save()
+        
+            user.set_password(user.password)
+            user.save()
+            return Response({
+                "user": UserSerializer(user, context=self.get_serializer_context()).data,
+                "token": AuthToken.objects.create(user)[1],
+                "message":"User created Successfully!!"
+            })
+
+        # except  IntegrityError as err:
+        #     print(err)
+        #     # raise serializers.ValidationError("finish must occur after start")
+        #     return Response({'username':err.args[1]})
+        
 # Login API
 class Login_user(K_LoginView):
     permission_classes = (permissions.AllowAny,)
@@ -124,4 +134,53 @@ class Login_user(K_LoginView):
         print(user)
         login(request, user)
         return super(Login_user, self).post(request, format=None)
+
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.dispatch import receiver
+from django.core.mail import send_mail  
+
+# @receiver(reset_password_token_created)
+# def password_reset_token(sender,instance,reset_password_token,*args, **kwargs):
+#     email_plaintext_message ="{}?token={}".format(
+#             instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+#             reset_password_token.key)
+#     send_mail(
+#         # title:
+#         "Password Reset for {title}".format(title="EFashion.com"),
+#         # message:
+#         email_plaintext_message,
+#         # from:
+#         "noreply@somehost.local",
+#         # to:
+#         [reset_password_token.user.email]
+#     )
+
+#     return Response({"message":"Email Sent !!"})
+
+@receiver(reset_password_token_created)
+def password_reset_token(sender,instance,reset_password_token,*args, **kwargs):
+
+    email_plaintext_message ="click here: http://localhost:3000/reset_password \n token={}".format(
+                       reset_password_token.key)
+
+    # print(*args)
+    print(instance.request.data)
+
+    if instance.request.data.get('username'):
+        user=User.objects.get(username=instance.request.data.get('username'))
+        # print(user.email)
+
+        if reset_password_token.user.email == user.email:
+            send_mail(
+                # title:
+                "Password Reset for {title}".format(title="EFashion.com"),
+                # message:
+                email_plaintext_message,
+                # from:
+                "noreply@somehost.local",
+                # to:
+                [reset_password_token.user.email]
+            )
+
+    return Response({"message":"Email Sent !!"})
 
